@@ -1,0 +1,51 @@
+plugins {
+    // Apply the scala plugin to add support for Scala
+    id 'scala'
+    id 'com.github.johnrengelman.shadow' version '2.0.0'
+}
+apply plugin: 'idea'
+
+jar.enabled = false
+
+def scalaVersion = '2.11'
+
+dependencies {
+    // Use Scala 2.11 in our library project
+ 
+
+
+}
+
+repositories {
+    mavenCentral()
+}
+
+task run(type: JavaExec, dependsOn: classes) {
+    main = mainClassFile
+    classpath sourceSets.main.runtimeClasspath
+    classpath (configurations.runtime + configurations.compileOnly)
+}
+
+jar {
+    classifier = 'all'
+    manifest {
+        attributes 'Implementation-Title': title,
+                'Implementation-Version': version,
+                'Main-Class': mainClassFile
+    }
+    include { sourceSets.main.output.classesDir }
+    zip64 true
+}
+assemble.dependsOn(shadowJar)
+shadowJar {
+    archiveName = "${title}-${version}.jar"
+    append 'reference.conf'
+    destinationDir new File("./build/target")
+    relocate 'org.apache.http', 'shadow.org.apache.http'
+
+    zip64 true
+    configurations = [project.configurations.compile]
+}
+
+
+
